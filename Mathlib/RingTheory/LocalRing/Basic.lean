@@ -33,6 +33,7 @@ theorem of_nonunits_add [Nontrivial R]
 
 
 end Semiring
+
 section CommSemiring
 
 variable [CommSemiring R]
