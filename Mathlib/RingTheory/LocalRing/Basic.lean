@@ -107,6 +107,7 @@ theorem of_surjective' [Ring S] [Nontrivial S] (f : R →+* S) (hf : Function.Su
     apply f.isUnit_map)
 
 end CommRing
+
 end LocalRing
 
 namespace Field
