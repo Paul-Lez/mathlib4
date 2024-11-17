@@ -367,6 +367,14 @@ theorem lt_mul_of_lt_mul_of_nonneg_right [MulPosMono α] (h : a < b * c) (hle : 
     a < d * c :=
   h.trans_le (mul_le_mul_of_nonneg_right hle c0)
 
+-- see Note [lower instance priority]
+instance (priority := 100) [MulLeftMono α] : PosMulMono α where
+  elim _ _ _ := CovariantClass.elim _
+
+-- see Note [lower instance priority]
+instance (priority := 100) [MulRightMono α] : MulPosMono α where
+  elim _ _ _ := CovariantClass.elim (μ := (swap (· * ·))) _
+
 end Preorder
 
 section LinearOrder
