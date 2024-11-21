@@ -7,11 +7,11 @@ import Lean.Util.SearchPath
 import Mathlib.Lean.CoreM
 import Mathlib.Tactic.ToExpr
 
-/-! # Script to check `undergrad.yaml`, `overview.yaml`, and `100.yaml`
+/-! # Script to check `undergrad.yaml`, `overview.yaml`, `100.yaml` and `1000.yaml`
 
 This assumes `yaml_check.py` has first translated these to `json` files.
 
-It verifies that the referenced declarations exist.
+It verifies that the referenced declarations exist, and prints an error otherwise.
 -/
 
 open IO.FS Lean Lean.Elab
@@ -24,7 +24,7 @@ def readJsonFile (α) [FromJson α] (path : System.FilePath) : IO α := do
   liftExcept <| fromJson? <|← liftExcept <| Json.parse <|← IO.FS.readFile path
 
 def databases : List (String × String) :=
-  ["undergrad", "overview", "100"].map fun dir =>
+  ["undergrad", "overview", "100", "1000"].map fun dir =>
     (dir ++ ".json",
       s!"Entries in `docs/{dir}.yaml` refer to declarations that don't exist. \
         Please correct the following:")
