@@ -26,7 +26,7 @@ def readJsonFile (α) [FromJson α] (path : System.FilePath) : IO α := do
 def databases : List (String × String) :=
   ["undergrad", "overview", "100", "1000"].map fun dir =>
     (dir ++ ".json",
-      s!"Entries in `docs/{dir}.yaml` refer to declarations that don't exist. \
+      s!"Entries in `docs/{dir}.yaml` refer to N declaration(s) that don't exist. \
         Please correct the following:")
 
 def processDb (decls : ConstMap) : String × String → IO Bool
@@ -34,7 +34,7 @@ def processDb (decls : ConstMap) : String × String → IO Bool
   let lines := ← readJsonFile DBFile file
   let missing := lines.filter (fun l => !(decls.contains l.2))
   if 0 < missing.size then
-    IO.println msg
+    IO.println (msg.replace "N" s!"{missing.size}")
     for p in missing do
       IO.println s!"  {p.1}: {p.2}"
     IO.println ""
