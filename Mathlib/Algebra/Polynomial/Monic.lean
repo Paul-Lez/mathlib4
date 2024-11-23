@@ -357,7 +357,7 @@ variable [Semiring R]
 @[simp]
 theorem Monic.natDegree_map [Semiring S] [Nontrivial S] {P : R[X]} (hmo : P.Monic) (f : R →+* S) :
     (P.map f).natDegree = P.natDegree := by
-  refine le_antisymm (natDegree_map_le _ _) (le_natDegree_of_ne_zero ?_)
+  refine le_antisymm natDegree_map_le (le_natDegree_of_ne_zero ?_)
   rw [coeff_map, Monic.coeff_natDegree hmo, RingHom.map_one]
   exact one_ne_zero
 
