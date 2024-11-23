@@ -366,7 +366,7 @@ theorem Monic.degree_map [Semiring S] [Nontrivial S] {P : R[X]} (hmo : P.Monic) 
     (P.map f).degree = P.degree := by
   by_cases hP : P = 0
   · simp [hP]
-  · refine le_antisymm (degree_map_le _ _) ?_
+  · refine le_antisymm degree_map_le ?_
     rw [degree_eq_natDegree hP]
     refine le_degree_of_ne_zero ?_
     rw [coeff_map, Monic.coeff_natDegree hmo, RingHom.map_one]
