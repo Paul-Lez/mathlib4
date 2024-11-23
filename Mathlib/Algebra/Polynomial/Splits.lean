@@ -187,7 +187,7 @@ theorem splits_iff_comp_splits_of_degree_eq_one {f : K[X]} {p : K[X]} (hd : (p.m
 This is a weaker variant of `Splits.comp_of_map_degree_le_one`,
 but its conditions are easier to check.
 -/
-theorem Splits.comp_of_degree_le_one {f : K[X]} {p : K[X]} (hd : p.degree ≤ 1) 
+theorem Splits.comp_of_degree_le_one {f : K[X]} {p : K[X]} (hd : p.degree ≤ 1)
     (h : f.Splits i) : (f.comp p).Splits i :=
   Splits.comp_of_map_degree_le_one (degree_map_le.trans hd) h
 
