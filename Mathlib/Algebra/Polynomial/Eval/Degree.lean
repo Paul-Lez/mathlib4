@@ -145,10 +145,16 @@ lemma degree_map_lt (hp : f p.leadingCoeff = 0) (hp₀ : p ≠ 0) : (p.map f).de
     at hp
   rw [← degree_eq_bot, ← hpq, hp, degree_zero]
 
--- TODO: There is a version of this where we assume `p` nonconstant instead of `map f p ≠ 0`
 lemma natDegree_map_lt (hp : f p.leadingCoeff = 0) (hp₀ : map f p ≠ 0) :
     (p.map f).natDegree < p.natDegree :=
   natDegree_lt_natDegree hp₀ <| degree_map_lt hp <| by rintro rfl; simp at hp₀
+
+/-- Variant of `natDegree_map_lt` that assumes `0 < natDegree p` instead of `map f p ≠ 0`. -/
+lemma natDegree_map_lt' (hp : f p.leadingCoeff = 0) (hp₀ : 0 < natDegree p) :
+    (p.map f).natDegree < p.natDegree := by
+  by_cases H : map f p = 0
+  · rwa [H, natDegree_zero]
+  · exact natDegree_map_lt hp H
 
 theorem degree_map_eq_of_leadingCoeff_ne_zero (f : R →+* S) (hf : f (leadingCoeff p) ≠ 0) :
     degree (p.map f) = degree p := by
