@@ -44,7 +44,7 @@ in terms of extended charts in `contMDiffOn_iff` and `contMDiff_iff`.
 -/
 
 
-open Set Function Filter ChartedSpace SmoothManifoldWithCorners
+open Set Function Filter ChartedSpace ContMDiffManifoldWithCorners
 
 open scoped Topology Manifold ContDiff
 
@@ -66,13 +66,13 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
   {I'' : ModelWithCorners 𝕜 E'' H''} {M'' : Type*} [TopologicalSpace M''] [ChartedSpace H'' M'']
   -- declare functions, sets, points and smoothness indices
   {e : PartialHomeomorph M H}
-  {e' : PartialHomeomorph M' H'} {f f₁ : M → M'} {s s₁ t : Set M} {x : M} {m n : ℕ∞}
+  {e' : PartialHomeomorph M' H'} {f f₁ : M → M'} {s s₁ t : Set M} {x : M} {m n : WithTop ℕ∞}
 
 variable (I I') in
 /-- Property in the model space of a model with corners of being `C^n` within at set at a point,
 when read in the model vector space. This property will be lifted to manifolds to define smooth
 functions between manifolds. -/
-def ContDiffWithinAtProp (n : ℕ∞) (f : H → H') (s : Set H) (x : H) : Prop :=
+def ContDiffWithinAtProp (n : WithTop ℕ∞) (f : H → H') (s : Set H) (x : H) : Prop :=
   ContDiffWithinAt 𝕜 n (I' ∘ f ∘ I.symm) (I.symm ⁻¹' s ∩ range I) (I x)
 
 theorem contDiffWithinAtProp_self_source {f : E → H'} {s : Set E} {x : E} :
@@ -91,9 +91,9 @@ theorem contDiffWithinAtProp_self_target {f : H → E'} {s : Set H} {x : H} :
 
 /-- Being `Cⁿ` in the model space is a local property, invariant under smooth maps. Therefore,
 it will lift nicely to manifolds. -/
-theorem contDiffWithinAt_localInvariantProp (n : ℕ∞) :
-    (contDiffGroupoid ∞ I).LocalInvariantProp (contDiffGroupoid ∞ I')
-      (ContDiffWithinAtProp I I' n) where
+theorem contDiffWithinAt_localInvariantProp (n m : WithTop ℕ∞) (hmn : m ≤ n) :
+    (contDiffGroupoid n I).LocalInvariantProp (contDiffGroupoid n I')
+      (ContDiffWithinAtProp I I' m) where
   is_local {s x u f} u_open xu := by
     have : I.symm ⁻¹' (s ∩ u) ∩ range I = I.symm ⁻¹' s ∩ range I ∩ I.symm ⁻¹' u := by
       simp only [inter_right_comm, preimage_inter]
@@ -110,7 +110,7 @@ theorem contDiffWithinAt_localInvariantProp (n : ℕ∞) :
     rw [this] at h
     have : I (e x) ∈ I.symm ⁻¹' e.target ∩ range I := by simp only [hx, mfld_simps]
     have := (mem_groupoid_of_pregroupoid.2 he).2.contDiffWithinAt this
-    convert (h.comp_inter _ (this.of_le (mod_cast le_top))).mono_of_mem_nhdsWithin _
+    convert (h.comp_inter _ (this.of_le hmn)).mono_of_mem_nhdsWithin _
       using 1
     · ext y; simp only [mfld_simps]
     refine mem_nhdsWithin.mpr
@@ -128,12 +128,12 @@ theorem contDiffWithinAt_localInvariantProp (n : ℕ∞) :
     have A : (I' ∘ f ∘ I.symm) (I x) ∈ I'.symm ⁻¹' e'.source ∩ range I' := by
       simp only [hx, mfld_simps]
     have := (mem_groupoid_of_pregroupoid.2 he').1.contDiffWithinAt A
-    convert (this.of_le (mod_cast le_top)).comp _ h _
+    convert (this.of_le hmn).comp _ h _
     · ext y; simp only [mfld_simps]
     · intro y hy; simp only [mfld_simps] at hy; simpa only [hy, mfld_simps] using hs hy.1
 
 theorem contDiffWithinAtProp_mono_of_mem_nhdsWithin
-    (n : ℕ∞) ⦃s x t⦄ ⦃f : H → H'⦄ (hts : s ∈ 𝓝[t] x)
+    (n : WithTop ℕ∞) ⦃s x t⦄ ⦃f : H → H'⦄ (hts : s ∈ 𝓝[t] x)
     (h : ContDiffWithinAtProp I I' n f s x) : ContDiffWithinAtProp I I' n f t x := by
   refine h.mono_of_mem_nhdsWithin ?_
   refine inter_mem ?_ (mem_of_superset self_mem_nhdsWithin inter_subset_right)
@@ -153,7 +153,7 @@ variable (I I') in
 /-- A function is `n` times continuously differentiable within a set at a point in a manifold if
 it is continuous and it is `n` times continuously differentiable in this set around this point, when
 read in the preferred chart at this point. -/
-def ContMDiffWithinAt (n : ℕ∞) (f : M → M') (s : Set M) (x : M) :=
+def ContMDiffWithinAt (n : WithTop ℕ∞) (f : M → M') (s : Set M) (x : M) :=
   LiftPropWithinAt (ContDiffWithinAtProp I I' n) f s x
 
 @[deprecated (since := "024-11-21")] alias SmoothWithinAt := ContMDiffWithinAt
@@ -162,10 +162,10 @@ variable (I I') in
 /-- A function is `n` times continuously differentiable at a point in a manifold if
 it is continuous and it is `n` times continuously differentiable around this point, when
 read in the preferred chart at this point. -/
-def ContMDiffAt (n : ℕ∞) (f : M → M') (x : M) :=
+def ContMDiffAt (n : WithTop ℕ∞) (f : M → M') (x : M) :=
   ContMDiffWithinAt I I' n f univ x
 
-theorem contMDiffAt_iff {n : ℕ∞} {f : M → M'} {x : M} :
+theorem contMDiffAt_iff {n : WithTop ℕ∞} {f : M → M'} {x : M} :
     ContMDiffAt I I' n f x ↔
       ContinuousAt f x ∧
         ContDiffWithinAt 𝕜 n (extChartAt I' (f x) ∘ f ∘ (extChartAt I x).symm) (range I)
@@ -178,7 +178,7 @@ variable (I I') in
 /-- A function is `n` times continuously differentiable in a set of a manifold if it is continuous
 and, for any pair of points, it is `n` times continuously differentiable on this set in the charts
 around these points. -/
-def ContMDiffOn (n : ℕ∞) (f : M → M') (s : Set M) :=
+def ContMDiffOn (n : WithTop ℕ∞) (f : M → M') (s : Set M) :=
   ∀ x ∈ s, ContMDiffWithinAt I I' n f s x
 
 @[deprecated (since := "024-11-21")] alias SmoothOn := ContMDiffOn
@@ -187,7 +187,7 @@ variable (I I') in
 /-- A function is `n` times continuously differentiable in a manifold if it is continuous
 and, for any pair of points, it is `n` times continuously differentiable in the charts
 around these points. -/
-def ContMDiff (n : ℕ∞) (f : M → M') :=
+def ContMDiff (n : WithTop ℕ∞) (f : M → M') :=
   ∀ x, ContMDiffAt I I' n f x
 
 @[deprecated (since := "024-11-21")] alias Smooth := ContMDiff
@@ -300,40 +300,40 @@ theorem contMDiffAt_iff_target {x : M} :
 @[deprecated (since := "2024-11-20")] alias smoothAt_iff_target := contMDiffAt_iff_target
 
 
-section SmoothManifoldWithCorners
+section ContMDiffManifoldWithCorners
 
 theorem contMDiffWithinAt_iff_source_of_mem_maximalAtlas
-    [SmoothManifoldWithCorners I M] (he : e ∈ maximalAtlas I M) (hx : x ∈ e.source) :
+    [ContMDiffManifoldWithCorners I n M] (he : e ∈ maximalAtlas I n M) (hx : x ∈ e.source) :
     ContMDiffWithinAt I I' n f s x ↔
       ContMDiffWithinAt 𝓘(𝕜, E) I' n (f ∘ (e.extend I).symm) ((e.extend I).symm ⁻¹' s ∩ range I)
         (e.extend I x) := by
   have h2x := hx; rw [← e.extend_source (I := I)] at h2x
   simp_rw [ContMDiffWithinAt,
-    (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_indep_chart_source he hx,
+    (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_indep_chart_source he hx,
     StructureGroupoid.liftPropWithinAt_self_source,
     e.extend_symm_continuousWithinAt_comp_right_iff, contDiffWithinAtProp_self_source,
     ContDiffWithinAtProp, Function.comp, e.left_inv hx, (e.extend I).left_inv h2x]
   rfl
 
 theorem contMDiffWithinAt_iff_source_of_mem_source
-    [SmoothManifoldWithCorners I M] {x' : M} (hx' : x' ∈ (chartAt H x).source) :
+    [ContMDiffManifoldWithCorners I n M] {x' : M} (hx' : x' ∈ (chartAt H x).source) :
     ContMDiffWithinAt I I' n f s x' ↔
       ContMDiffWithinAt 𝓘(𝕜, E) I' n (f ∘ (extChartAt I x).symm)
         ((extChartAt I x).symm ⁻¹' s ∩ range I) (extChartAt I x x') :=
   contMDiffWithinAt_iff_source_of_mem_maximalAtlas (chart_mem_maximalAtlas x) hx'
 
 theorem contMDiffAt_iff_source_of_mem_source
-    [SmoothManifoldWithCorners I M] {x' : M} (hx' : x' ∈ (chartAt H x).source) :
+    [ContMDiffManifoldWithCorners I n M] {x' : M} (hx' : x' ∈ (chartAt H x).source) :
     ContMDiffAt I I' n f x' ↔
       ContMDiffWithinAt 𝓘(𝕜, E) I' n (f ∘ (extChartAt I x).symm) (range I) (extChartAt I x x') := by
   simp_rw [ContMDiffAt, contMDiffWithinAt_iff_source_of_mem_source hx', preimage_univ, univ_inter]
 
 theorem contMDiffWithinAt_iff_target_of_mem_source
-    [SmoothManifoldWithCorners I' M'] {x : M} {y : M'} (hy : f x ∈ (chartAt H' y).source) :
+    [ContMDiffManifoldWithCorners I' n M'] {x : M} {y : M'} (hy : f x ∈ (chartAt H' y).source) :
     ContMDiffWithinAt I I' n f s x ↔
       ContinuousWithinAt f s x ∧ ContMDiffWithinAt I 𝓘(𝕜, E') n (extChartAt I' y ∘ f) s x := by
   simp_rw [ContMDiffWithinAt]
-  rw [(contDiffWithinAt_localInvariantProp n).liftPropWithinAt_indep_chart_target
+  rw [(contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_indep_chart_target
       (chart_mem_maximalAtlas y) hy,
     and_congr_right]
   intro hf
@@ -344,26 +344,27 @@ theorem contMDiffWithinAt_iff_target_of_mem_source
   rfl
 
 theorem contMDiffAt_iff_target_of_mem_source
-    [SmoothManifoldWithCorners I' M'] {x : M} {y : M'} (hy : f x ∈ (chartAt H' y).source) :
+    [ContMDiffManifoldWithCorners I' n M'] {x : M} {y : M'} (hy : f x ∈ (chartAt H' y).source) :
     ContMDiffAt I I' n f x ↔
       ContinuousAt f x ∧ ContMDiffAt I 𝓘(𝕜, E') n (extChartAt I' y ∘ f) x := by
   rw [ContMDiffAt, contMDiffWithinAt_iff_target_of_mem_source hy, continuousWithinAt_univ,
     ContMDiffAt]
 
-variable [SmoothManifoldWithCorners I M] [SmoothManifoldWithCorners I' M']
+variable [ContMDiffManifoldWithCorners I n M] [ContMDiffManifoldWithCorners I' n M']
 
-theorem contMDiffWithinAt_iff_of_mem_maximalAtlas {x : M} (he : e ∈ maximalAtlas I M)
-    (he' : e' ∈ maximalAtlas I' M') (hx : x ∈ e.source) (hy : f x ∈ e'.source) :
+theorem contMDiffWithinAt_iff_of_mem_maximalAtlas {x : M} (he : e ∈ maximalAtlas I n M)
+    (he' : e' ∈ maximalAtlas I' n M') (hx : x ∈ e.source) (hy : f x ∈ e'.source) :
     ContMDiffWithinAt I I' n f s x ↔
       ContinuousWithinAt f s x ∧
         ContDiffWithinAt 𝕜 n (e'.extend I' ∘ f ∘ (e.extend I).symm)
           ((e.extend I).symm ⁻¹' s ∩ range I) (e.extend I x) :=
-  (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_indep_chart he hx he' hy
+  (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_indep_chart he hx he' hy
 
 /-- An alternative formulation of `contMDiffWithinAt_iff_of_mem_maximalAtlas`
   if the set if `s` lies in `e.source`. -/
-theorem contMDiffWithinAt_iff_image {x : M} (he : e ∈ maximalAtlas I M)
-    (he' : e' ∈ maximalAtlas I' M') (hs : s ⊆ e.source) (hx : x ∈ e.source) (hy : f x ∈ e'.source) :
+theorem contMDiffWithinAt_iff_image {x : M} (he : e ∈ maximalAtlas I n M)
+    (he' : e' ∈ maximalAtlas I' n M')
+    (hs : s ⊆ e.source) (hx : x ∈ e.source) (hy : f x ∈ e'.source) :
     ContMDiffWithinAt I I' n f s x ↔
       ContinuousWithinAt f s x ∧
         ContDiffWithinAt 𝕜 n (e'.extend I' ∘ f ∘ (e.extend I).symm) (e.extend I '' s)
@@ -410,16 +411,16 @@ theorem contMDiffAt_iff_of_mem_source {x' : M} {y : M'} (hx : x' ∈ (chartAt H 
   (contMDiffWithinAt_iff_of_mem_source hx hy).trans <| by
     rw [continuousWithinAt_univ, preimage_univ, univ_inter]
 
-theorem contMDiffOn_iff_of_mem_maximalAtlas (he : e ∈ maximalAtlas I M)
-    (he' : e' ∈ maximalAtlas I' M') (hs : s ⊆ e.source) (h2s : MapsTo f s e'.source) :
+theorem contMDiffOn_iff_of_mem_maximalAtlas (he : e ∈ maximalAtlas I n M)
+    (he' : e' ∈ maximalAtlas I' n M') (hs : s ⊆ e.source) (h2s : MapsTo f s e'.source) :
     ContMDiffOn I I' n f s ↔
       ContinuousOn f s ∧
         ContDiffOn 𝕜 n (e'.extend I' ∘ f ∘ (e.extend I).symm) (e.extend I '' s) := by
   simp_rw [ContinuousOn, ContDiffOn, Set.forall_mem_image, ← forall_and, ContMDiffOn]
   exact forall₂_congr fun x hx => contMDiffWithinAt_iff_image he he' hs (hs hx) (h2s hx)
 
-theorem contMDiffOn_iff_of_mem_maximalAtlas' (he : e ∈ maximalAtlas I M)
-    (he' : e' ∈ maximalAtlas I' M') (hs : s ⊆ e.source) (h2s : MapsTo f s e'.source) :
+theorem contMDiffOn_iff_of_mem_maximalAtlas' (he : e ∈ maximalAtlas I n M)
+    (he' : e' ∈ maximalAtlas I' n M') (hs : s ⊆ e.source) (h2s : MapsTo f s e'.source) :
     ContMDiffOn I I' n f s ↔
       ContDiffOn 𝕜 n (e'.extend I' ∘ f ∘ (e.extend I).symm) (e.extend I '' s) :=
   (contMDiffOn_iff_of_mem_maximalAtlas he he' hs h2s).trans <| and_iff_right_of_imp fun h ↦
@@ -473,7 +474,7 @@ theorem contMDiffOn_iff :
     · simp only [w, hz, mfld_simps]
     · mfld_set_tac
   · rintro ⟨hcont, hdiff⟩ x hx
-    refine (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_iff.mpr ?_
+    refine (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_iff.mpr ?_
     refine ⟨hcont x hx, ?_⟩
     dsimp [ContDiffWithinAtProp]
     convert hdiff x (f x) (extChartAt I x x) (by simp only [hx, mfld_simps]) using 1
@@ -525,22 +526,22 @@ theorem contMDiff_iff_target :
 
 @[deprecated (since := "2024-11-20")] alias smooth_iff_target := contMDiff_iff_target
 
-end SmoothManifoldWithCorners
+end ContMDiffManifoldWithCorners
 
 /-! ### Deducing smoothness from smoothness one step beyond -/
 
 
-theorem ContMDiffWithinAt.of_succ {n : ℕ} (h : ContMDiffWithinAt I I' n.succ f s x) :
+theorem ContMDiffWithinAt.of_succ (h : ContMDiffWithinAt I I' (n + 1) f s x) :
     ContMDiffWithinAt I I' n f s x :=
-  h.of_le (WithTop.coe_le_coe.2 (Nat.le_succ n))
+  h.of_le le_self_add
 
-theorem ContMDiffAt.of_succ {n : ℕ} (h : ContMDiffAt I I' n.succ f x) : ContMDiffAt I I' n f x :=
+theorem ContMDiffAt.of_succ(h : ContMDiffAt I I' (n + 1) f x) : ContMDiffAt I I' n f x :=
   ContMDiffWithinAt.of_succ h
 
-theorem ContMDiffOn.of_succ {n : ℕ} (h : ContMDiffOn I I' n.succ f s) : ContMDiffOn I I' n f s :=
+theorem ContMDiffOn.of_succ (h : ContMDiffOn I I' (n + 1) f s) : ContMDiffOn I I' n f s :=
   fun x hx => (h x hx).of_succ
 
-theorem ContMDiff.of_succ {n : ℕ} (h : ContMDiff I I' n.succ f) : ContMDiff I I' n f := fun x =>
+theorem ContMDiff.of_succ (h : ContMDiff I I' (n + 1) f) : ContMDiff I I' n f := fun x =>
   (h x).of_succ
 
 /-! ### Deducing continuity from smoothness -/
@@ -561,19 +562,20 @@ theorem ContMDiff.continuous (hf : ContMDiff I I' n f) : Continuous f :=
 
 /-! ### `C^∞` smoothness -/
 
-theorem contMDiffWithinAt_top :
-    ContMDiffWithinAt I I' ⊤ f s x ↔ ∀ n : ℕ, ContMDiffWithinAt I I' n f s x :=
+theorem contMDiffWithinAt_infty :
+    ContMDiffWithinAt I I' ∞ f s x ↔ ∀ n : ℕ, ContMDiffWithinAt I I' n f s x :=
   ⟨fun h n => ⟨h.1, contDiffWithinAt_infty.1 h.2 n⟩, fun H =>
     ⟨(H 0).1, contDiffWithinAt_infty.2 fun n => (H n).2⟩⟩
 
-theorem contMDiffAt_top : ContMDiffAt I I' ⊤ f x ↔ ∀ n : ℕ, ContMDiffAt I I' n f x :=
-  contMDiffWithinAt_top
+theorem contMDiffAt_infty : ContMDiffAt I I' ∞ f x ↔ ∀ n : ℕ, ContMDiffAt I I' n f x :=
+  contMDiffWithinAt_infty
 
-theorem contMDiffOn_top : ContMDiffOn I I' ⊤ f s ↔ ∀ n : ℕ, ContMDiffOn I I' n f s :=
-  ⟨fun h _ => h.of_le le_top, fun h x hx => contMDiffWithinAt_top.2 fun n => h n x hx⟩
+theorem contMDiffOn_infty : ContMDiffOn I I' ∞ f s ↔ ∀ n : ℕ, ContMDiffOn I I' n f s :=
+  ⟨fun h _ => h.of_le (mod_cast le_top),
+    fun h x hx => contMDiffWithinAt_infty.2 fun n => h n x hx⟩
 
-theorem contMDiff_top : ContMDiff I I' ⊤ f ↔ ∀ n : ℕ, ContMDiff I I' n f :=
-  ⟨fun h _ => h.of_le le_top, fun h x => contMDiffWithinAt_top.2 fun n => h n x⟩
+theorem contMDiff_infty : ContMDiff I I' ∞ f ↔ ∀ n : ℕ, ContMDiff I I' n f :=
+  ⟨fun h _ => h.of_le (mod_cast le_top), fun h x => contMDiffWithinAt_infty.2 fun n => h n x⟩
 
 theorem contMDiffWithinAt_iff_nat :
     ContMDiffWithinAt I I' n f s x ↔ ∀ m : ℕ, (m : ℕ∞) ≤ n → ContMDiffWithinAt I I' m f s x := by
@@ -599,7 +601,7 @@ theorem ContMDiffWithinAt.mono (hf : ContMDiffWithinAt I I' n f s x) (hts : t �
 
 theorem contMDiffWithinAt_congr_set (h : s =ᶠ[𝓝 x] t) :
     ContMDiffWithinAt I I' n f s x ↔ ContMDiffWithinAt I I' n f t x :=
-  (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_congr_set h
+  (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_congr_set h
 
 theorem ContMDiffWithinAt.congr_set (h : ContMDiffWithinAt I I' n f s x) (hst : s =ᶠ[𝓝 x] t) :
     ContMDiffWithinAt I I' n f t x :=
@@ -646,16 +648,16 @@ protected theorem ContMDiff.contMDiffOn (hf : ContMDiff I I' n f) : ContMDiffOn 
 
 theorem contMDiffWithinAt_inter' (ht : t ∈ 𝓝[s] x) :
     ContMDiffWithinAt I I' n f (s ∩ t) x ↔ ContMDiffWithinAt I I' n f s x :=
-  (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_inter' ht
+  (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_inter' ht
 
 theorem contMDiffWithinAt_inter (ht : t ∈ 𝓝 x) :
     ContMDiffWithinAt I I' n f (s ∩ t) x ↔ ContMDiffWithinAt I I' n f s x :=
-  (contDiffWithinAt_localInvariantProp n).liftPropWithinAt_inter ht
+  (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropWithinAt_inter ht
 
 protected theorem ContMDiffWithinAt.contMDiffAt
     (h : ContMDiffWithinAt I I' n f s x) (ht : s ∈ 𝓝 x) :
     ContMDiffAt I I' n f x :=
-  (contDiffWithinAt_localInvariantProp n).liftPropAt_of_liftPropWithinAt h ht
+  (contDiffWithinAt_localInvariantProp n n le_rfl).liftPropAt_of_liftPropWithinAt h ht
 
 @[deprecated (since := "2024-11-20")] alias SmoothWithinAt.smoothAt := ContMDiffWithinAt.contMDiffAt
 
@@ -665,8 +667,8 @@ protected theorem ContMDiffOn.contMDiffAt (h : ContMDiffOn I I' n f s) (hx : s �
 
 @[deprecated (since := "2024-11-20")] alias SmoothOn.smoothAt := ContMDiffOn.contMDiffAt
 
-theorem contMDiffOn_iff_source_of_mem_maximalAtlas [SmoothManifoldWithCorners I M]
-    (he : e ∈ maximalAtlas I M) (hs : s ⊆ e.source) :
+theorem contMDiffOn_iff_source_of_mem_maximalAtlas [ContMDiffManifoldWithCorners I n M]
+    (he : e ∈ maximalAtlas I n M) (hs : s ⊆ e.source) :
     ContMDiffOn I I' n f s ↔
       ContMDiffOn 𝓘(𝕜, E) I' n (f ∘ (e.extend I).symm) (e.extend I '' s) := by
   simp_rw [ContMDiffOn, Set.forall_mem_image]
@@ -679,7 +681,7 @@ theorem contMDiffOn_iff_source_of_mem_maximalAtlas [SmoothManifoldWithCorners I 
 /-- A function is `C^n` within a set at a point, for `n : ℕ`, if and only if it is `C^n` on
 a neighborhood of this point. -/
 theorem contMDiffWithinAt_iff_contMDiffOn_nhds
-    [SmoothManifoldWithCorners I M] [SmoothManifoldWithCorners I' M'] {n : ℕ} :
+    [ContMDiffManifoldWithCorners I n M] [ContMDiffManifoldWithCorners I' n M'] :
     ContMDiffWithinAt I I' n f s x ↔ ∃ u ∈ 𝓝[insert x s] x, ContMDiffOn I I' n f u := by
   -- WLOG, `x ∈ s`, otherwise we add `x` to `s`
   wlog hxs : x ∈ s generalizing s
