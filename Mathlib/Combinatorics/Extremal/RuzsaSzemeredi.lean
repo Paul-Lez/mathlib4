@@ -59,10 +59,10 @@ lemma ruzsaSzemerediNumber_spec :
       #(G.cliqueFinset 3) = m ∧ G.LocallyLinear) _ _ (Nat.zero_le _)
     ⟨⊥, inferInstance, by simp, locallyLinear_bot⟩
 
-variable {α} {n : ℕ}
+variable {n : ℕ}
 
-lemma LocallyLinear.le_ruzsaSzemerediNumber [DecidableRel G.Adj] (hG : G.LocallyLinear) :
-    #(G.cliqueFinset 3) ≤ ruzsaSzemerediNumber α := by
+lemma SimpleGraph.LocallyLinear.le_ruzsaSzemerediNumber [DecidableRel G.Adj]
+    (hG : G.LocallyLinear) : #(G.cliqueFinset 3) ≤ ruzsaSzemerediNumber α := by
   classical
   exact le_findGreatest card_cliqueFinset_le ⟨G, inferInstance, by congr, hG⟩
 
@@ -92,7 +92,7 @@ lemma ruzsaSzemerediNumberNat_mono : Monotone ruzsaSzemerediNumberNat := fun _m 
   ruzsaSzemerediNumber_mono (Fin.castLEEmb h)
 
 lemma ruzsaSzemerediNumberNat_le : ruzsaSzemerediNumberNat n ≤ n.choose 3 :=
-  (ruzsaSzemerediNumber_le _).trans_eq <| by rw [Fintype.card_fin]
+  ruzsaSzemerediNumber_le.trans_eq <| by rw [Fintype.card_fin]
 
 @[simp] lemma ruzsaSzemerediNumberNat_zero : ruzsaSzemerediNumberNat 0 = 0 :=
   le_zero_iff.1 ruzsaSzemerediNumberNat_le
@@ -103,7 +103,7 @@ lemma ruzsaSzemerediNumberNat_le : ruzsaSzemerediNumberNat n ≤ n.choose 3 :=
 @[simp] lemma ruzsaSzemerediNumberNat_two : ruzsaSzemerediNumberNat 2 = 0 :=
   le_zero_iff.1 ruzsaSzemerediNumberNat_le
 
-end ruzsaSzemerediNumberNat
+end ruzsaSzemerediNumber
 
 /-! ### The Ruzsa-Szemerédi construction -/
 
@@ -163,8 +163,6 @@ private lemma card_edgeFinset (hs : ThreeAPFree (s : Set α)) [DecidableEq α] :
   rw [(locallyLinear hs).card_edgeFinset, card_triangles, card_triangleIndices, mul_assoc]
 
 end RuzsaSzemeredi
-
-open RuzsaSzemeredi
 
 variable (α) [Fintype α] [DecidableEq α] [CommRing α] [Fact <| IsUnit (2 : α)]
 
@@ -257,8 +255,8 @@ theorem ruzsaSzemerediNumberNat_asymptotic_lower_bound :
       exact ⟨15, fun x hx ↦ by norm_cast; omega⟩
     · rw [isBigO_exp_comp_exp_comp]
       refine ⟨0, ?_⟩
-      simp only [neg_mul, eventually_map, Pi.sub_apply, sub_neg_eq_add, neg_add_le_iff_le_add, add_zero,
-        ofNat_pos, _root_.mul_le_mul_left, eventually_atTop]
+      simp only [neg_mul, eventually_map, Pi.sub_apply, sub_neg_eq_add, neg_add_le_iff_le_add,
+        add_zero, ofNat_pos, _root_.mul_le_mul_left, eventually_atTop]
       refine ⟨9, fun x hx ↦ ?_⟩
       gcongr
       · simp
