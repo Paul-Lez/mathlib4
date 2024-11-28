@@ -697,15 +697,45 @@ namespace ContMDiffManifoldWithCorners
 charted space with a structure groupoid, avoiding the need to specify the groupoid
 `contDiffGroupoid n I` explicitly. -/
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
-  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H)
-  (n : WithTop ℕ∞) (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H}
+  {n : WithTop ℕ∞} {M : Type*} [TopologicalSpace M] [ChartedSpace H M]
 
+protected theorem of_le {m n : WithTop ℕ∞} (hmn : m ≤ n)
+    [ContMDiffManifoldWithCorners I n M] : ContMDiffManifoldWithCorners I m M := by
+  have : HasGroupoid M (contDiffGroupoid m I) :=
+    hasGroupoid_of_le (G₁ := contDiffGroupoid n I) (by infer_instance)
+      (contDiffGroupoid_le hmn)
+  exact mk' I m M
+
+instance [ContMDiffManifoldWithCorners I ω M] : ContMDiffManifoldWithCorners I n M :=
+  ContMDiffManifoldWithCorners.of_le le_top
+
+instance [h : ContMDiffManifoldWithCorners I ∞ M] : ContMDiffManifoldWithCorners I (∞ + 1) M := h
+
+instance [ContMDiffManifoldWithCorners I ∞ M] (n : ℕ) :
+    ContMDiffManifoldWithCorners I n M :=
+  ContMDiffManifoldWithCorners.of_le (n := ∞) (mod_cast le_top)
+
+instance [ContMDiffManifoldWithCorners I ∞ M] (n : ℕ) [n.AtLeastTwo] :
+    ContMDiffManifoldWithCorners I (no_index (OfNat.ofNat n)) M := by
+  rw [show (OfNat.ofNat n : WithTop ℕ∞) = (n : ℕ) from rfl]
+  infer_instance
+
+instance [ContMDiffManifoldWithCorners I ∞ M] :
+    ContMDiffManifoldWithCorners I 1 M := by
+  rw [show (1 : WithTop ℕ∞) = (1 : ℕ) from rfl]
+  infer_instance
+
+instance [ContMDiffManifoldWithCorners I ∞ M] :
+    ContMDiffManifoldWithCorners I 0 M := by
+  rw [show (0 : WithTop ℕ∞) = (0 : ℕ) from rfl]
+  infer_instance
+
+variable (I n M) in
 /-- The maximal atlas of `M` for the smooth manifold with corners structure corresponding to the
 model with corners `I`. -/
 def maximalAtlas :=
   (contDiffGroupoid n I).maximalAtlas M
-
-variable {I n M}
 
 theorem subset_maximalAtlas [ContMDiffManifoldWithCorners I n M] : atlas H M ⊆ maximalAtlas I n M :=
   StructureGroupoid.subset_maximalAtlas _

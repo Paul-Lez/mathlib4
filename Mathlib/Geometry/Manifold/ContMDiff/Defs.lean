@@ -678,10 +678,10 @@ theorem contMDiffOn_iff_source_of_mem_maximalAtlas [ContMDiffManifoldWithCorners
   simp_rw [e.extend_symm_preimage_inter_range_eventuallyEq hs (hs hx)]
 
 -- Porting note: didn't compile; fixed by golfing the proof and moving parts to lemmas
-/-- A function is `C^n` within a set at a point, for `n : ℕ`, if and only if it is `C^n` on
-a neighborhood of this point. -/
+/-- A function is `C^n` within a set at a point, for `n : ℕ` or `n = ω`,
+if and only if it is `C^n` on a neighborhood of this point. -/
 theorem contMDiffWithinAt_iff_contMDiffOn_nhds
-    [ContMDiffManifoldWithCorners I n M] [ContMDiffManifoldWithCorners I' n M'] :
+    [ContMDiffManifoldWithCorners I n M] [ContMDiffManifoldWithCorners I' n M'] (hn : n ≠ ∞) :
     ContMDiffWithinAt I I' n f s x ↔ ∃ u ∈ 𝓝[insert x s] x, ContMDiffOn I I' n f u := by
   -- WLOG, `x ∈ s`, otherwise we add `x` to `s`
   wlog hxs : x ∈ s generalizing s
@@ -692,7 +692,7 @@ theorem contMDiffWithinAt_iff_contMDiffOn_nhds
     (hu _ (mem_of_mem_nhdsWithin hxs hmem)).mono_of_mem_nhdsWithin hmem⟩
   -- The property is true in charts. Let `v` be a good neighborhood in the chart where the function
   -- is smooth.
-  rcases (contMDiffWithinAt_iff'.1 h).2.contDiffOn le_rfl (by simp) with ⟨v, hmem, hsub, hv⟩
+  rcases (contMDiffWithinAt_iff'.1 h).2.contDiffOn le_rfl (by simp [hn]) with ⟨v, hmem, hsub, hv⟩
   have hxs' : extChartAt I x x ∈ (extChartAt I x).target ∩
       (extChartAt I x).symm ⁻¹' (s ∩ f ⁻¹' (extChartAt I' (f x)).source) :=
     ⟨(extChartAt I x).map_source (mem_extChartAt_source _), by rwa [extChartAt_to_inv], by
@@ -715,11 +715,11 @@ theorem contMDiffWithinAt_iff_contMDiffOn_nhds
 this set on an open set around the basepoint.
 -/
 theorem ContMDiffWithinAt.contMDiffOn'
-    [SmoothManifoldWithCorners I M] [SmoothManifoldWithCorners I' M']
-    {m : ℕ} (hm : (m : ℕ∞) ≤ n)
+    [ContMDiffManifoldWithCorners I n M] [ContMDiffManifoldWithCorners I' n M']
+    {m : ℕ} (hm : m ≤ n)
     (h : ContMDiffWithinAt I I' n f s x) :
     ∃ u, IsOpen u ∧ x ∈ u ∧ ContMDiffOn I I' m f (insert x s ∩ u) := by
-  rcases contMDiffWithinAt_iff_contMDiffOn_nhds.1 (h.of_le hm) with ⟨t, ht, h't⟩
+  rcases (contMDiffWithinAt_iff_contMDiffOn_nhds (by simp)).1 (h.of_le hm) with ⟨t, ht, h't⟩
   rcases mem_nhdsWithin.1 ht with ⟨u, u_open, xu, hu⟩
   rw [inter_comm] at hu
   exact ⟨u, u_open, xu, h't.mono hu⟩
