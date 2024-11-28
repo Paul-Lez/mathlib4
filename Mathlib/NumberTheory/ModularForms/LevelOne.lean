@@ -20,7 +20,7 @@ lemma SlashInvariantForm.exists_one_half_le_im_and_norm_le {k : ℤ} (hk : k ≤
     [FunLike F ℍ ℂ] [SlashInvariantFormClass F ⊤ k] (f : F) (τ : ℍ) :
     ∃ ξ : ℍ, 1/2 ≤ ξ.im ∧ ‖f τ‖ ≤ ‖f ξ‖ :=
   let ⟨γ, hγ, hdenom⟩ := exists_one_half_le_im_smul_and_norm_denom_le τ
-  ⟨γ • τ, hγ, by simpa only [slash_action_eqn'' _ (show γ ∈ ⊤ by tauto), norm_mul, norm_zpow]
+  ⟨γ • τ, hγ, by simpa only [slash_action_eqn'' _ (Subgroup.mem_top γ), norm_mul, norm_zpow]
     using le_mul_of_one_le_left (norm_nonneg _) <|
       one_le_zpow_of_nonpos₀ (norm_pos_iff.2 (denom_ne_zero _ _)) hdenom hk⟩
 
@@ -28,8 +28,8 @@ lemma SlashInvariantForm.exists_one_half_le_im_and_norm_le {k : ℤ} (hk : k ≤
 lemma SlashInvariantForm.wt_eq_zero_of_eq_const
     {F : Type*} [FunLike F ℍ ℂ] (k : ℤ) [SlashInvariantFormClass F ⊤ k]
     {f : F} {c : ℂ} (hf : ∀ τ, f τ = c) : k = 0 ∨ c = 0 := by
-  have hI := slash_action_eqn'' f (by tauto : ModularGroup.S ∈ ⊤) I
-  have h2I2 := slash_action_eqn'' f (by tauto : ModularGroup.S ∈ ⊤) ⟨2 * Complex.I, by simp⟩
+  have hI := slash_action_eqn'' f (Subgroup.mem_top ModularGroup.S) I
+  have h2I2 := slash_action_eqn'' f (Subgroup.mem_top ModularGroup.S) ⟨2 * Complex.I, by simp⟩
   simp only [sl_moeb, hf, denom_S, coe_mk_subtype] at hI h2I2
   nth_rw 1 [h2I2] at hI
   simp only [mul_zpow, coe_I, mul_eq_mul_right_iff, mul_left_eq_self₀] at hI
