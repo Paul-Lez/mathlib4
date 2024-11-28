@@ -36,10 +36,10 @@ but add these assumptions later as needed. (Quite a few results still do not req
 * `contDiffGroupoid n I` :
   when `I` is a model with corners on `(𝕜, E, H)`, this is the groupoid of partial homeos of `H`
   which are of class `C^n` over the normed field `𝕜`, when read in `E`.
-* `SmoothManifoldWithCorners I M` :
-  a type class saying that the charted space `M`, modelled on the space `H`, has `C^∞` changes of
+* `ContMDiffManifoldWithCorners I n M` :
+  a type class saying that the charted space `M`, modelled on the space `H`, has `C^n` changes of
   coordinates with respect to the model with corners `I` on `(𝕜, E, H)`. This type class is just
-  a shortcut for `HasGroupoid M (contDiffGroupoid ∞ I)`.
+  a shortcut for `HasGroupoid M (contDiffGroupoid n I)`.
 * `extChartAt I x`:
   in a smooth manifold with corners with the model `I` on `(E, H)`, the charts take values in `H`,
   but often we may want to use their `E`-valued version, obtained by composing the charts with `I`.
@@ -60,7 +60,7 @@ With these definitions at hand, to invoke an `n`-dimensional real manifold witho
 one could use
 
   `variable {n : ℕ} {M : Type*} [TopologicalSpace M] [ChartedSpace (EuclideanSpace ℝ (Fin n)) M]
-   [SmoothManifoldWithCorners (𝓡 n) M]`.
+   [ContMDiffManifoldWithCorners (𝓡 n) ∞ M]`.
 
 However, this is not the recommended way: a theorem proved using this assumption would not apply
 for instance to the tangent space of such a manifold, which is modelled on
@@ -73,7 +73,7 @@ the right properties, like
 
   `variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
   {I : ModelWithCorners ℝ E E} [I.Boundaryless]
-  {M : Type*} [TopologicalSpace M] [ChartedSpace E M] [SmoothManifoldWithCorners I M]`
+  {M : Type*} [TopologicalSpace M] [ChartedSpace E M] [ContMDiffManifoldWithCorners I ∞ M]`
 
 Here, `I.Boundaryless` is a typeclass property ensuring that there is no boundary (this is for
 instance the case for `modelWithCornersSelf`, or products of these). Note that one could consider
@@ -81,6 +81,10 @@ as a natural assumption to only use the trivial model with corners `modelWithCor
 but again in product manifolds the natural model with corners will not be this one but the product
 one (and they are not defeq as `(fun p : E × F ↦ (p.1, p.2))` is not defeq to the identity).
 So, it is important to use the above incantation to maximize the applicability of theorems.
+
+Even better, if the result should apply in a parallel way to smooth manifolds and to analytic
+manifolds, the last typeclass should be replaced with `[ContMDiffManifoldWithCorners I n M]`
+for `n : WithTop ℕ∞`.
 
 We also define `TangentSpace I (x : M)` as a type synonym of `E`, and `TangentBundle I M` as a
 type synonym for `Π (x : M), TangentSpace I x` (in the form of an
@@ -620,8 +624,8 @@ variable {E' H' : Type*} [NormedAddCommGroup E'] [NormedSpace 𝕜 E'] [Topologi
 
 /-- The product of two smooth partial homeomorphisms is smooth. -/
 theorem contDiffGroupoid_prod {I : ModelWithCorners 𝕜 E H} {I' : ModelWithCorners 𝕜 E' H'}
-    {e : PartialHomeomorph H H} {e' : PartialHomeomorph H' H'} (he : e ∈ contDiffGroupoid ∞ I)
-    (he' : e' ∈ contDiffGroupoid ∞ I') : e.prod e' ∈ contDiffGroupoid ∞ (I.prod I') := by
+    {e : PartialHomeomorph H H} {e' : PartialHomeomorph H' H'} (he : e ∈ contDiffGroupoid n I)
+    (he' : e' ∈ contDiffGroupoid n I') : e.prod e' ∈ contDiffGroupoid n (I.prod I') := by
   cases' he with he he_symm
   cases' he' with he' he'_symm
   simp only at he he_symm he' he'_symm
@@ -647,72 +651,76 @@ instance : ClosedUnderRestriction (contDiffGroupoid n I) :=
 
 end contDiffGroupoid
 
-section SmoothManifoldWithCorners
+section ContMDiffManifoldWithCorners
 
 /-! ### Smooth manifolds with corners -/
 
 
 /-- Typeclass defining smooth manifolds with corners with respect to a model with corners, over a
 field `𝕜` and with infinite smoothness to simplify typeclass search and statements later on. -/
-class SmoothManifoldWithCorners {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
+class ContMDiffManifoldWithCorners {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
     [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    (I : ModelWithCorners 𝕜 E H) (M : Type*) [TopologicalSpace M] [ChartedSpace H M] extends
-    HasGroupoid M (contDiffGroupoid ∞ I) : Prop
+    (I : ModelWithCorners 𝕜 E H) (n : WithTop ℕ∞) (M : Type*)
+    [TopologicalSpace M] [ChartedSpace H M] extends
+    HasGroupoid M (contDiffGroupoid n I) : Prop
 
-theorem SmoothManifoldWithCorners.mk' {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
+/-- Building a smooth manifold with corners from a `HasGroupoid` assumption. -/
+theorem ContMDiffManifoldWithCorners.mk' {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
     [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    (I : ModelWithCorners 𝕜 E H) (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
-    [gr : HasGroupoid M (contDiffGroupoid ∞ I)] : SmoothManifoldWithCorners I M :=
+    (I : ModelWithCorners 𝕜 E H) (n : WithTop ℕ∞)
+    (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    [gr : HasGroupoid M (contDiffGroupoid n I)] : ContMDiffManifoldWithCorners I n M :=
   { gr with }
 
-theorem smoothManifoldWithCorners_of_contDiffOn {𝕜 : Type*} [NontriviallyNormedField 𝕜]
+theorem contMDiffManifoldWithCorners_of_contDiffOn {𝕜 : Type*} [NontriviallyNormedField 𝕜]
     {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    (I : ModelWithCorners 𝕜 E H) (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
+    (I : ModelWithCorners 𝕜 E H) (n : WithTop ℕ∞) (M : Type*)
+    [TopologicalSpace M] [ChartedSpace H M]
     (h : ∀ e e' : PartialHomeomorph M H, e ∈ atlas H M → e' ∈ atlas H M →
-      ContDiffOn 𝕜 ∞ (I ∘ e.symm ≫ₕ e' ∘ I.symm) (I.symm ⁻¹' (e.symm ≫ₕ e').source ∩ range I)) :
-    SmoothManifoldWithCorners I M where
+      ContDiffOn 𝕜 n (I ∘ e.symm ≫ₕ e' ∘ I.symm) (I.symm ⁻¹' (e.symm ≫ₕ e').source ∩ range I)) :
+    ContMDiffManifoldWithCorners I n M where
   compatible := by
-    haveI : HasGroupoid M (contDiffGroupoid ∞ I) := hasGroupoid_of_pregroupoid _ (h _ _)
+    haveI : HasGroupoid M (contDiffGroupoid n I) := hasGroupoid_of_pregroupoid _ (h _ _)
     apply StructureGroupoid.compatible
 
 /-- For any model with corners, the model space is a smooth manifold -/
 instance model_space_smooth {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*}
     [NormedAddCommGroup E] [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H]
-    {I : ModelWithCorners 𝕜 E H} : SmoothManifoldWithCorners I H :=
+    {I : ModelWithCorners 𝕜 E H} {n : WithTop ℕ∞} : ContMDiffManifoldWithCorners I n H :=
   { hasGroupoid_model_space _ _ with }
 
-end SmoothManifoldWithCorners
+end ContMDiffManifoldWithCorners
 
-namespace SmoothManifoldWithCorners
+namespace ContMDiffManifoldWithCorners
 
-/- We restate in the namespace `SmoothManifoldWithCorners` some lemmas that hold for general
+/- We restate in the namespace `ContMDiffManifoldWithCorners` some lemmas that hold for general
 charted space with a structure groupoid, avoiding the need to specify the groupoid
-`contDiffGroupoid ∞ I` explicitly. -/
+`contDiffGroupoid n I` explicitly. -/
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
-  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H) (M : Type*)
-  [TopologicalSpace M] [ChartedSpace H M]
+  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] (I : ModelWithCorners 𝕜 E H)
+  (n : WithTop ℕ∞) (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
 
 /-- The maximal atlas of `M` for the smooth manifold with corners structure corresponding to the
 model with corners `I`. -/
 def maximalAtlas :=
-  (contDiffGroupoid ∞ I).maximalAtlas M
+  (contDiffGroupoid n I).maximalAtlas M
 
-variable {I M}
+variable {I n M}
 
-theorem subset_maximalAtlas [SmoothManifoldWithCorners I M] : atlas H M ⊆ maximalAtlas I M :=
+theorem subset_maximalAtlas [ContMDiffManifoldWithCorners I n M] : atlas H M ⊆ maximalAtlas I n M :=
   StructureGroupoid.subset_maximalAtlas _
 
-theorem chart_mem_maximalAtlas [SmoothManifoldWithCorners I M] (x : M) :
-    chartAt H x ∈ maximalAtlas I M :=
+theorem chart_mem_maximalAtlas [ContMDiffManifoldWithCorners I n M] (x : M) :
+    chartAt H x ∈ maximalAtlas I n M :=
   StructureGroupoid.chart_mem_maximalAtlas _ x
 
-theorem compatible_of_mem_maximalAtlas {e e' : PartialHomeomorph M H} (he : e ∈ maximalAtlas I M)
-    (he' : e' ∈ maximalAtlas I M) : e.symm.trans e' ∈ contDiffGroupoid ∞ I :=
+theorem compatible_of_mem_maximalAtlas {e e' : PartialHomeomorph M H} (he : e ∈ maximalAtlas I n M)
+    (he' : e' ∈ maximalAtlas I n M) : e.symm.trans e' ∈ contDiffGroupoid n I :=
   StructureGroupoid.compatible_of_mem_maximalAtlas he he'
 
 /-- The empty set is a smooth manifold w.r.t. any charted space and model. -/
-instance empty [IsEmpty M] : SmoothManifoldWithCorners I M := by
-  apply smoothManifoldWithCorners_of_contDiffOn
+instance empty [IsEmpty M] : ContMDiffManifoldWithCorners I n M := by
+  apply contMDiffManifoldWithCorners_of_contDiffOn
   intro e e' _ _ x hx
   set t := I.symm ⁻¹' (e.symm ≫ₕ e').source ∩ range I
   -- Since `M` is empty, the condition about compatibility of transition maps is vacuous.
@@ -733,30 +741,31 @@ instance prod {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedA
     [NormedSpace 𝕜 E] {E' : Type*} [NormedAddCommGroup E'] [NormedSpace 𝕜 E'] {H : Type*}
     [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H} {H' : Type*} [TopologicalSpace H']
     {I' : ModelWithCorners 𝕜 E' H'} (M : Type*) [TopologicalSpace M] [ChartedSpace H M]
-    [SmoothManifoldWithCorners I M] (M' : Type*) [TopologicalSpace M'] [ChartedSpace H' M']
-    [SmoothManifoldWithCorners I' M'] : SmoothManifoldWithCorners (I.prod I') (M × M') where
+    [ContMDiffManifoldWithCorners I n M] (M' : Type*) [TopologicalSpace M'] [ChartedSpace H' M']
+    [ContMDiffManifoldWithCorners I' n M'] :
+    ContMDiffManifoldWithCorners (I.prod I') n (M × M') where
   compatible := by
     rintro f g ⟨f1, hf1, f2, hf2, rfl⟩ ⟨g1, hg1, g2, hg2, rfl⟩
     rw [PartialHomeomorph.prod_symm, PartialHomeomorph.prod_trans]
-    have h1 := (contDiffGroupoid ∞ I).compatible hf1 hg1
-    have h2 := (contDiffGroupoid ∞ I').compatible hf2 hg2
+    have h1 := (contDiffGroupoid n I).compatible hf1 hg1
+    have h2 := (contDiffGroupoid n I').compatible hf2 hg2
     exact contDiffGroupoid_prod h1 h2
 
-end SmoothManifoldWithCorners
+end ContMDiffManifoldWithCorners
 
 theorem PartialHomeomorph.singleton_smoothManifoldWithCorners
     {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E]
-    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H}
+    {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H} {n : WithTop ℕ∞}
     {M : Type*} [TopologicalSpace M] (e : PartialHomeomorph M H) (h : e.source = Set.univ) :
-    @SmoothManifoldWithCorners 𝕜 _ E _ _ H _ I M _ (e.singletonChartedSpace h) :=
-  @SmoothManifoldWithCorners.mk' _ _ _ _ _ _ _ _ _ _ (id _) <|
-    e.singleton_hasGroupoid h (contDiffGroupoid ∞ I)
+    @ContMDiffManifoldWithCorners 𝕜 _ E _ _ H _ I n M _ (e.singletonChartedSpace h) :=
+  @ContMDiffManifoldWithCorners.mk' _ _ _ _ _ _ _ _ _ _ _ (id _) <|
+    e.singleton_hasGroupoid h (contDiffGroupoid n I)
 
 theorem Topology.IsOpenEmbedding.singleton_smoothManifoldWithCorners {𝕜 E H : Type*}
     [NontriviallyNormedField 𝕜] [NormedAddCommGroup E] [NormedSpace 𝕜 E] [TopologicalSpace H]
-    {I : ModelWithCorners 𝕜 E H} {M : Type*} [TopologicalSpace M] [Nonempty M] {f : M → H}
-    (h : IsOpenEmbedding f) :
-    @SmoothManifoldWithCorners 𝕜 _ E _ _ H _ I M _ h.singletonChartedSpace :=
+    {I : ModelWithCorners 𝕜 E H} {n : WithTop ℕ∞}
+    {M : Type*} [TopologicalSpace M] [Nonempty M] {f : M → H} (h : IsOpenEmbedding f) :
+    @ContMDiffManifoldWithCorners 𝕜 _ E _ _ H _ I n M _ h.singletonChartedSpace :=
   (h.toPartialHomeomorph f).singleton_smoothManifoldWithCorners (by simp)
 
 @[deprecated (since := "2024-10-18")]
@@ -768,11 +777,12 @@ namespace TopologicalSpace.Opens
 open TopologicalSpace
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {E : Type*} [NormedAddCommGroup E]
-  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H} {M : Type*}
-  [TopologicalSpace M] [ChartedSpace H M] [SmoothManifoldWithCorners I M] (s : Opens M)
+  [NormedSpace 𝕜 E] {H : Type*} [TopologicalSpace H] {I : ModelWithCorners 𝕜 E H} {n : WithTop ℕ∞}
+  {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [ContMDiffManifoldWithCorners I n M]
+  (s : Opens M)
 
-instance : SmoothManifoldWithCorners I s :=
-  { s.instHasGroupoid (contDiffGroupoid ∞ I) with }
+instance : ContMDiffManifoldWithCorners I n s :=
+  { s.instHasGroupoid (contDiffGroupoid n I) with }
 
 end TopologicalSpace.Opens
 
@@ -781,7 +791,8 @@ section ExtendedCharts
 open scoped Topology
 
 variable {𝕜 E M H E' M' H' : Type*} [NontriviallyNormedField 𝕜] [NormedAddCommGroup E]
-  [NormedSpace 𝕜 E] [TopologicalSpace H] [TopologicalSpace M] (f f' : PartialHomeomorph M H)
+  [NormedSpace 𝕜 E] [TopologicalSpace H] [TopologicalSpace M] {n : WithTop ℕ∞}
+  (f f' : PartialHomeomorph M H)
   {I : ModelWithCorners 𝕜 E H} [NormedAddCommGroup E'] [NormedSpace 𝕜 E'] [TopologicalSpace H']
   [TopologicalSpace M'] {I' : ModelWithCorners 𝕜 E' H'} {s t : Set M}
 
@@ -1058,25 +1069,25 @@ theorem extend_coord_change_source_mem_nhdsWithin' {x : M} (hxf : x ∈ f.source
 
 variable {f f'}
 
-open SmoothManifoldWithCorners
+open ContMDiffManifoldWithCorners
 
-theorem contDiffOn_extend_coord_change [ChartedSpace H M] (hf : f ∈ maximalAtlas I M)
-    (hf' : f' ∈ maximalAtlas I M) :
-    ContDiffOn 𝕜 ∞ (f.extend I ∘ (f'.extend I).symm) ((f'.extend I).symm ≫ f.extend I).source := by
+theorem contDiffOn_extend_coord_change [ChartedSpace H M] (hf : f ∈ maximalAtlas I n M)
+    (hf' : f' ∈ maximalAtlas I n M) :
+    ContDiffOn 𝕜 n (f.extend I ∘ (f'.extend I).symm) ((f'.extend I).symm ≫ f.extend I).source := by
   rw [extend_coord_change_source, I.image_eq]
   exact (StructureGroupoid.compatible_of_mem_maximalAtlas hf' hf).1
 
-theorem contDiffWithinAt_extend_coord_change [ChartedSpace H M] (hf : f ∈ maximalAtlas I M)
-    (hf' : f' ∈ maximalAtlas I M) {x : E} (hx : x ∈ ((f'.extend I).symm ≫ f.extend I).source) :
-    ContDiffWithinAt 𝕜 ∞ (f.extend I ∘ (f'.extend I).symm) (range I) x := by
+theorem contDiffWithinAt_extend_coord_change [ChartedSpace H M] (hf : f ∈ maximalAtlas I n M)
+    (hf' : f' ∈ maximalAtlas I n M) {x : E} (hx : x ∈ ((f'.extend I).symm ≫ f.extend I).source) :
+    ContDiffWithinAt 𝕜 n (f.extend I ∘ (f'.extend I).symm) (range I) x := by
   apply (contDiffOn_extend_coord_change hf hf' x hx).mono_of_mem_nhdsWithin
   rw [extend_coord_change_source] at hx ⊢
   obtain ⟨z, hz, rfl⟩ := hx
   exact I.image_mem_nhdsWithin ((PartialHomeomorph.open_source _).mem_nhds hz)
 
-theorem contDiffWithinAt_extend_coord_change' [ChartedSpace H M] (hf : f ∈ maximalAtlas I M)
-    (hf' : f' ∈ maximalAtlas I M) {x : M} (hxf : x ∈ f.source) (hxf' : x ∈ f'.source) :
-    ContDiffWithinAt 𝕜 ∞ (f.extend I ∘ (f'.extend I).symm) (range I) (f'.extend I x) := by
+theorem contDiffWithinAt_extend_coord_change' [ChartedSpace H M] (hf : f ∈ maximalAtlas I n M)
+    (hf' : f' ∈ maximalAtlas I n M) {x : M} (hxf : x ∈ f.source) (hxf' : x ∈ f'.source) :
+    ContDiffWithinAt 𝕜 n (f.extend I ∘ (f'.extend I).symm) (range I) (f'.extend I x) := by
   refine contDiffWithinAt_extend_coord_change hf hf' ?_
   rw [← extend_image_source_inter]
   exact mem_image_of_mem _ ⟨hxf', hxf⟩
@@ -1402,16 +1413,16 @@ theorem ext_coord_change_source (x x' : M) :
       I '' ((chartAt H x').symm ≫ₕ chartAt H x).source :=
   extend_coord_change_source _ _
 
-open SmoothManifoldWithCorners
+open ContMDiffManifoldWithCorners
 
-theorem contDiffOn_ext_coord_change [SmoothManifoldWithCorners I M] (x x' : M) :
-    ContDiffOn 𝕜 ∞ (extChartAt I x ∘ (extChartAt I x').symm)
+theorem contDiffOn_ext_coord_change [ContMDiffManifoldWithCorners I n M] (x x' : M) :
+    ContDiffOn 𝕜 n (extChartAt I x ∘ (extChartAt I x').symm)
       ((extChartAt I x').symm ≫ extChartAt I x).source :=
   contDiffOn_extend_coord_change (chart_mem_maximalAtlas x) (chart_mem_maximalAtlas x')
 
-theorem contDiffWithinAt_ext_coord_change [SmoothManifoldWithCorners I M] (x x' : M) {y : E}
+theorem contDiffWithinAt_ext_coord_change [ContMDiffManifoldWithCorners I n M] (x x' : M) {y : E}
     (hy : y ∈ ((extChartAt I x').symm ≫ extChartAt I x).source) :
-    ContDiffWithinAt 𝕜 ∞ (extChartAt I x ∘ (extChartAt I x').symm) (range I) y :=
+    ContDiffWithinAt 𝕜 n (extChartAt I x ∘ (extChartAt I x').symm) (range I) y :=
   contDiffWithinAt_extend_coord_change (chart_mem_maximalAtlas x) (chart_mem_maximalAtlas x') hy
 
 variable (I I') in
