@@ -270,7 +270,7 @@ local notation "°" => Polynomial.natDegree
 local notation3 "coeff("p")" => Set.range (coeff p)
 local notation3 "submodule("p")" => 1 ⊔ Submodule.span ℤ coeff(p)
 
-attribute [local instance 9999] instPosMulMonoOfMulLeftMono instMulPosMonoOfMulRightMono
+attribute [local instance 9999] MulLeftMono.toPosMulMono MulRightMono.toMulPosMono
 
 open Submodule Set in
 lemma divModByMonicAux_mem_pow_natDegree_mul : ∀ (p q : R[X]) (hq : q.Monic) (i),
