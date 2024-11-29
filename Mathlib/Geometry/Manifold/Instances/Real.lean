@@ -335,12 +335,12 @@ instance IccChartedSpace (x y : ℝ) [h : Fact (x < y)] :
 
 /-- The manifold structure on `[x, y]` is smooth.
 -/
-instance Icc_smoothManifoldWithCorners (x y : ℝ) [Fact (x < y)] :
-    SmoothManifoldWithCorners (𝓡∂ 1) (Icc x y) := by
-  have M : ContDiff ℝ ∞ (show EuclideanSpace ℝ (Fin 1) → EuclideanSpace ℝ (Fin 1)
+instance Icc_smoothManifoldWithCorners (x y : ℝ) [Fact (x < y)] {n : WithTop ℕ∞} :
+    ContMDiffManifoldWithCorners (𝓡∂ 1) n (Icc x y) := by
+  have M : ContDiff ℝ n (show EuclideanSpace ℝ (Fin 1) → EuclideanSpace ℝ (Fin 1)
       from fun z i => -z i + (y - x)) :=
     contDiff_id.neg.add contDiff_const
-  apply smoothManifoldWithCorners_of_contDiffOn
+  apply contMDiffManifoldWithCorners_of_contDiffOn
   intro e e' he he'
   simp only [atlas, mem_singleton_iff, mem_insert_iff] at he he'
   /- We need to check that any composition of two charts gives a `C^∞` function. Each chart can be
@@ -380,6 +380,7 @@ section
 
 instance : ChartedSpace (EuclideanHalfSpace 1) (Icc (0 : ℝ) 1) := by infer_instance
 
-instance : SmoothManifoldWithCorners (𝓡∂ 1) (Icc (0 : ℝ) 1) := by infer_instance
+instance {n : WithTop ℕ∞} : ContMDiffManifoldWithCorners (𝓡∂ 1) n (Icc (0 : ℝ) 1) := by
+  infer_instance
 
 end

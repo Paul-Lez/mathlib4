@@ -22,7 +22,7 @@ chain rule, manifolds, higher derivative
 -/
 
 open Filter Function Set Topology
-open scoped Manifold
+open scoped Manifold ContDiff
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
   -- declare the prerequisites for a charted space `M` over the pair `(E, H)`.
@@ -41,7 +41,7 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜]
 section ChartedSpace
 variable [ChartedSpace H M] [ChartedSpace H' M'] [ChartedSpace H'' M'']
   -- declare functions, sets, points and smoothness indices
-  {f : M → M'} {s : Set M} {x : M} {n : ℕ∞}
+  {f : M → M'} {s : Set M} {x : M} {n : WithTop ℕ∞}
 
 /-! ### Smoothness of the composition of smooth functions between manifolds -/
 
@@ -315,13 +315,13 @@ end ChartedSpace
 
 section
 
-variable {e : M → H} (h : IsOpenEmbedding e) {n : WithTop ℕ}
+variable {e : M → H} (h : IsOpenEmbedding e) {n : WithTop ℕ∞}
 
 /-- If the `ChartedSpace` structure on a manifold `M` is given by an open embedding `e : M → H`,
 then `e` is smooth. -/
 lemma contMDiff_isOpenEmbedding [Nonempty M] :
     haveI := h.singletonChartedSpace; ContMDiff I I n e := by
-  haveI := h.singleton_smoothManifoldWithCorners (I := I)
+  haveI := h.singleton_smoothManifoldWithCorners (I := I) (n := ω)
   rw [@contMDiff_iff _ _ _ _ _ _ _ _ _ _ h.singletonChartedSpace]
   use h.continuous
   intros x y
@@ -350,7 +350,7 @@ then the inverse of `e` is smooth. -/
 lemma contMDiffOn_isOpenEmbedding_symm [Nonempty M] :
     haveI := h.singletonChartedSpace; ContMDiffOn I I
       n (IsOpenEmbedding.toPartialHomeomorph e h).symm (range e) := by
-  haveI := h.singleton_smoothManifoldWithCorners (I := I)
+  haveI := h.singleton_smoothManifoldWithCorners (I := I) (n := ω)
   rw [@contMDiffOn_iff]
   constructor
   · rw [← h.toPartialHomeomorph_target]
