@@ -97,8 +97,8 @@ variable {f g : M → G} {s : Set M} {x : M}
 
 @[to_additive]
 theorem ContMDiffWithinAt.mul (hf : ContMDiffWithinAt I' I n f s x)
-    (hg : ContMDiffWithinAt I' I n g s x) : ContMDiffWithinAt I' I n (f * g) s x := by
-  apply ((contMDiff_mul I n).contMDiffAt).comp_contMDiffWithinAt x (hf.prod_mk hg)
+    (hg : ContMDiffWithinAt I' I n g s x) : ContMDiffWithinAt I' I n (f * g) s x :=
+  (contMDiff_mul I n).contMDiffAt.comp_contMDiffWithinAt x (hf.prod_mk hg)
 
 @[to_additive]
 nonrec theorem ContMDiffAt.mul (hf : ContMDiffAt I' I n f x) (hg : ContMDiffAt I' I n g x) :
