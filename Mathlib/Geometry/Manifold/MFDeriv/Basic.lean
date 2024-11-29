@@ -459,7 +459,7 @@ end SmoothManifoldWithCorners
 
 /-! ### Deducing differentiability from smoothness -/
 
-variable {n : ℕ∞}
+variable {n : WithTop ℕ∞}
 
 theorem ContMDiffWithinAt.mdifferentiableWithinAt (hf : ContMDiffWithinAt I I' n f s x)
     (hn : 1 ≤ n) : MDifferentiableWithinAt I I' f s x := by

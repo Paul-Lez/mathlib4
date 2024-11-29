@@ -748,13 +748,9 @@ theorem compatible_of_mem_maximalAtlas {e e' : PartialHomeomorph M H} (he : e �
     (he' : e' ∈ maximalAtlas I n M) : e.symm.trans e' ∈ contDiffGroupoid n I :=
   StructureGroupoid.compatible_of_mem_maximalAtlas he he'
 
-lemma maximalAtlas_subset {m n : WithTop ℕ∞} (h : m ≤ n) :
-    maximalAtlas I n M ⊆ maximalAtlas I m M := by
-  apply StructureGroupoid.maximalAtlas_mono
-
-
-
-
+lemma maximalAtlas_subset_of_le {m n : WithTop ℕ∞} (h : m ≤ n) :
+    maximalAtlas I n M ⊆ maximalAtlas I m M :=
+  StructureGroupoid.maximalAtlas_mono (contDiffGroupoid_le h)
 
 /-- The empty set is a smooth manifold w.r.t. any charted space and model. -/
 instance empty [IsEmpty M] : ContMDiffManifoldWithCorners I n M := by

@@ -15,7 +15,7 @@ This file contains results about smoothness of standard maps associated to produ
 
 -/
 
-open Set Function Filter ChartedSpace SmoothManifoldWithCorners
+open Set Function Filter ChartedSpace ContMDiffManifoldWithCorners
 
 open scoped Topology Manifold
 

@@ -17,18 +17,16 @@ semigroups.
 -/
 
 
-open scoped Manifold
-/- Next line is necessary while the manifold smoothness class is not extended to `ω`.
-Later, replace with `open scoped ContDiff`. -/
-local notation "∞" => (⊤ : ℕ∞)
+open scoped Manifold ContDiff
+
 
 library_note "Design choices about smooth algebraic structures"/--
 1. All smooth algebraic structures on `G` are `Prop`-valued classes that extend
-`SmoothManifoldWithCorners I G`. This way we save users from adding both
-`[SmoothManifoldWithCorners I G]` and `[SmoothMul I G]` to the assumptions. While many API
-lemmas hold true without the `SmoothManifoldWithCorners I G` assumption, we're not aware of a
+`ContMDiffManifoldWithCorners I n G`. This way we save users from adding both
+`[ContMDiffManifoldWithCorners I n G]` and `[ContMDiffMul I n G]` to the assumptions. While many API
+lemmas hold true without the `ContMDiffManifoldWithCorners I n G` assumption, we're not aware of a
 mathematically interesting monoid on a topological manifold such that (a) the space is not a
-`SmoothManifoldWithCorners`; (b) the multiplication is smooth at `(a, b)` in the charts
+`ContMDiffManifoldWithCorners`; (b) the multiplication is smooth at `(a, b)` in the charts
 `extChartAt I a`, `extChartAt I b`, `extChartAt I (a * b)`.
 
 2. Because of `ModelProd` we can't assume, e.g., that a `LieGroup` is modelled on `𝓘(𝕜, E)`. So,
@@ -36,7 +34,7 @@ we formulate the definitions and lemmas for any model.
 
 3. While smoothness of an operation implies its continuity, lemmas like
 `continuousMul_of_smooth` can't be instances becausen otherwise Lean would have to search for
-`SmoothMul I G` with unknown `𝕜`, `E`, `H`, and `I : ModelWithCorners 𝕜 E H`. If users needs
+`ContMDiffMul I n G` with unknown `𝕜`, `E`, `H`, and `I : ModelWithCorners 𝕜 E H`. If users needs
 `[ContinuousMul G]` in a proof about a smooth monoid, then they need to either add
 `[ContinuousMul G]` as an assumption (worse) or use `haveI` in the proof (better). -/
 
@@ -44,60 +42,63 @@ we formulate the definitions and lemmas for any model.
 /-- Basic hypothesis to talk about a smooth (Lie) additive monoid or a smooth additive
 semigroup. A smooth additive monoid over `α`, for example, is obtained by requiring both the
 instances `AddMonoid α` and `SmoothAdd α`. -/
-class SmoothAdd {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H]
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] (I : ModelWithCorners 𝕜 E H) (G : Type*)
-    [Add G] [TopologicalSpace G] [ChartedSpace H G] extends SmoothManifoldWithCorners I G :
+class ContMDiffAdd {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] (I : ModelWithCorners 𝕜 E H)
+    (n : WithTop ℕ∞) (G : Type*)
+    [Add G] [TopologicalSpace G] [ChartedSpace H G] extends ContMDiffManifoldWithCorners I n G :
     Prop where
-  smooth_add : ContMDiff (I.prod I) I ⊤ fun p : G × G => p.1 + p.2
+  smooth_add : ContMDiff (I.prod I) I n fun p : G × G => p.1 + p.2
 
 -- See note [Design choices about smooth algebraic structures]
 /-- Basic hypothesis to talk about a smooth (Lie) monoid or a smooth semigroup.
 A smooth monoid over `G`, for example, is obtained by requiring both the instances `Monoid G`
 and `SmoothMul I G`. -/
 @[to_additive]
-class SmoothMul {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H]
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] (I : ModelWithCorners 𝕜 E H) (G : Type*)
-    [Mul G] [TopologicalSpace G] [ChartedSpace H G] extends SmoothManifoldWithCorners I G :
+class ContMDiffMul {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H]
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace 𝕜 E] (I : ModelWithCorners 𝕜 E H)
+    (n : WithTop ℕ∞) (G : Type*)
+    [Mul G] [TopologicalSpace G] [ChartedSpace H G] extends ContMDiffManifoldWithCorners I n G :
     Prop where
-  smooth_mul : ContMDiff (I.prod I) I ⊤ fun p : G × G => p.1 * p.2
+  smooth_mul : ContMDiff (I.prod I) I n fun p : G × G => p.1 * p.2
 
-section SmoothMul
+section ContMDiffMul
 
 variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {H : Type*} [TopologicalSpace H] {E : Type*}
-  [NormedAddCommGroup E] [NormedSpace 𝕜 E] {I : ModelWithCorners 𝕜 E H} {G : Type*} [Mul G]
-  [TopologicalSpace G] [ChartedSpace H G] [SmoothMul I G] {E' : Type*} [NormedAddCommGroup E']
+  [NormedAddCommGroup E] [NormedSpace 𝕜 E] {I : ModelWithCorners 𝕜 E H} {n : WithTop ℕ∞}
+  {G : Type*} [Mul G]
+  [TopologicalSpace G] [ChartedSpace H G] [ContMDiffMul I n G] {E' : Type*} [NormedAddCommGroup E']
   [NormedSpace 𝕜 E'] {H' : Type*} [TopologicalSpace H'] {I' : ModelWithCorners 𝕜 E' H'}
   {M : Type*} [TopologicalSpace M] [ChartedSpace H' M]
 
 section
 
-variable (I)
+variable (I n)
 
 @[to_additive]
-theorem contMDiff_mul : ContMDiff (I.prod I) I ⊤ fun p : G × G => p.1 * p.2 :=
-  SmoothMul.smooth_mul
+theorem contMDiff_mul : ContMDiff (I.prod I) I n fun p : G × G => p.1 * p.2 :=
+  ContMDiffMul.smooth_mul
 
 @[deprecated (since := "2024-11-20")] alias smooth_mul := contMDiff_mul
 @[deprecated (since := "2024-11-20")] alias smooth_add := contMDiff_add
 
-include I in
+include I n in
 /-- If the multiplication is smooth, then it is continuous. This is not an instance for technical
 reasons, see note [Design choices about smooth algebraic structures]. -/
 @[to_additive "If the addition is smooth, then it is continuous. This is not an instance for
 technical reasons, see note [Design choices about smooth algebraic structures]."]
 theorem continuousMul_of_smooth : ContinuousMul G :=
-  ⟨(contMDiff_mul I).continuous⟩
+  ⟨(contMDiff_mul I n).continuous⟩
 
 end
 
 section
 
-variable {f g : M → G} {s : Set M} {x : M} {n : ℕ∞}
+variable {f g : M → G} {s : Set M} {x : M}
 
 @[to_additive]
 theorem ContMDiffWithinAt.mul (hf : ContMDiffWithinAt I' I n f s x)
-    (hg : ContMDiffWithinAt I' I n g s x) : ContMDiffWithinAt I' I n (f * g) s x :=
-  ((contMDiff_mul I).contMDiffAt.of_le le_top).comp_contMDiffWithinAt x (hf.prod_mk hg)
+    (hg : ContMDiffWithinAt I' I n g s x) : ContMDiffWithinAt I' I n (f * g) s x := by
+  apply ((contMDiff_mul I n).contMDiffAt).comp_contMDiffWithinAt x (hf.prod_mk hg)
 
 @[to_additive]
 nonrec theorem ContMDiffAt.mul (hf : ContMDiffAt I' I n f x) (hg : ContMDiffAt I' I n g x) :
