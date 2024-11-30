@@ -707,29 +707,25 @@ protected theorem of_le {m n : WithTop ℕ∞} (hmn : m ≤ n)
       (contDiffGroupoid_le hmn)
   exact mk' I m M
 
-instance [ContMDiffManifoldWithCorners I ω M] : ContMDiffManifoldWithCorners I n M :=
+class _root_.ENat.LEInfty (m : WithTop ℕ∞) where
+  out : m ≤ ∞
+
+open ENat
+
+instance : LEInfty (∞ + 1) := ⟨le_rfl⟩
+instance (n : ℕ) : LEInfty (n : WithTop ℕ∞) := ⟨mod_cast le_top⟩
+instance (n : ℕ) [n.AtLeastTwo] : LEInfty (no_index (OfNat.ofNat n) : WithTop ℕ∞) :=
+  inferInstanceAs (LEInfty (n : WithTop ℕ∞))
+instance : LEInfty (1 : WithTop ℕ∞) := inferInstanceAs (LEInfty ((1 : ℕ) : WithTop ℕ∞))
+instance : LEInfty (0 : WithTop ℕ∞) := inferInstanceAs (LEInfty ((0 : ℕ) : WithTop ℕ∞))
+
+instance {a : WithTop ℕ∞} [ContMDiffManifoldWithCorners I ∞ M] [h : LEInfty a] :
+    ContMDiffManifoldWithCorners I a M :=
+  ContMDiffManifoldWithCorners.of_le h.out
+
+instance {a : WithTop ℕ∞} [ContMDiffManifoldWithCorners I ω M] :
+    ContMDiffManifoldWithCorners I a M :=
   ContMDiffManifoldWithCorners.of_le le_top
-
-instance [h : ContMDiffManifoldWithCorners I ∞ M] : ContMDiffManifoldWithCorners I (∞ + 1) M := h
-
-instance [ContMDiffManifoldWithCorners I ∞ M] (n : ℕ) :
-    ContMDiffManifoldWithCorners I n M :=
-  ContMDiffManifoldWithCorners.of_le (n := ∞) (mod_cast le_top)
-
-instance [ContMDiffManifoldWithCorners I ∞ M] (n : ℕ) [n.AtLeastTwo] :
-    ContMDiffManifoldWithCorners I (no_index (OfNat.ofNat n)) M := by
-  rw [show (OfNat.ofNat n : WithTop ℕ∞) = (n : ℕ) from rfl]
-  infer_instance
-
-instance [ContMDiffManifoldWithCorners I ∞ M] :
-    ContMDiffManifoldWithCorners I 1 M := by
-  rw [show (1 : WithTop ℕ∞) = (1 : ℕ) from rfl]
-  infer_instance
-
-instance [ContMDiffManifoldWithCorners I ∞ M] :
-    ContMDiffManifoldWithCorners I 0 M := by
-  rw [show (0 : WithTop ℕ∞) = (0 : ℕ) from rfl]
-  infer_instance
 
 variable (I n M) in
 /-- The maximal atlas of `M` for the smooth manifold with corners structure corresponding to the
