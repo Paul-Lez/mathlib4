@@ -134,12 +134,15 @@ theorem contMDiff_mul_left {a : G} : ContMDiff I I n (a * ·) :=
 theorem contMDiffAt_mul_left {a b : G} : ContMDiffAt I I n (a * ·) b :=
   contMDiff_mul_left.contMDiffAt
 
+omit [ContMDiffMul I n G] in
 @[to_additive]
-theorem mdifferentiable_mul_left {a : G} : MDifferentiable I I (a * ·) :=
+theorem mdifferentiable_mul_left [ContMDiffMul I 1 G] {a : G} : MDifferentiable I I (a * ·) :=
   contMDiff_mul_left.mdifferentiable le_rfl
 
+omit [ContMDiffMul I n G] in
 @[to_additive]
-theorem mdifferentiableAt_mul_left {a b : G} : MDifferentiableAt I I (a * ·) b :=
+theorem mdifferentiableAt_mul_left [ContMDiffMul I 1 G] {a b : G} :
+    MDifferentiableAt I I (a * ·) b :=
   contMDiffAt_mul_left.mdifferentiableAt le_rfl
 
 @[to_additive]
@@ -153,12 +156,15 @@ theorem contMDiff_mul_right {a : G} : ContMDiff I I n (· * a) :=
 theorem contMDiffAt_mul_right {a b : G} : ContMDiffAt I I n (· * a) b :=
   contMDiff_mul_right.contMDiffAt
 
+omit [ContMDiffMul I n G] in
 @[to_additive]
-theorem mdifferentiable_mul_right {a : G} : MDifferentiable I I (· * a) :=
+theorem mdifferentiable_mul_right [ContMDiffMul I 1 G] {a : G} : MDifferentiable I I (· * a) :=
   contMDiff_mul_right.mdifferentiable le_rfl
 
+omit [ContMDiffMul I n G] in
 @[to_additive]
-theorem mdifferentiableAt_mul_right {a b : G} : MDifferentiableAt I I (· * a) b :=
+theorem mdifferentiableAt_mul_right [ContMDiffMul I 1 G] {a b : G} :
+    MDifferentiableAt I I (· * a) b :=
   contMDiffAt_mul_right.mdifferentiableAt le_rfl
 
 end
