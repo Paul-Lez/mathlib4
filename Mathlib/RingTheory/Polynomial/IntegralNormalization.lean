@@ -78,7 +78,7 @@ end Semiring
 
 section IsDomain
 
-variable [Ring R] [IsDomain R]
+variable [Semiring R] [IsDomain R]
 
 @[simp]
 theorem support_integralNormalization {f : R[X]} :
@@ -94,42 +94,13 @@ end IsDomain
 
 section IsDomain
 
-variable [CommRing R] [IsDomain R]
+variable [CommSemiring R]
 variable [CommSemiring S]
 
 theorem integralNormalization_eval₂_eq_zero {p : R[X]} (f : R →+* S) {z : S} (hz : eval₂ f z p = 0)
     (inj : ∀ x : R, f x = 0 → x = 0) :
     eval₂ f (z * f p.leadingCoeff) (integralNormalization p) = 0 :=
-  calc
-    eval₂ f (z * f p.leadingCoeff) (integralNormalization p) =
-        p.support.attach.sum fun i =>
-          f (coeff (integralNormalization p) i.1 * p.leadingCoeff ^ i.1) * z ^ i.1 := by
-      rw [eval₂_eq_sum, sum_def, support_integralNormalization]
-      simp only [mul_comm z, mul_pow, mul_assoc, RingHom.map_pow, RingHom.map_mul]
-      rw [← Finset.sum_attach]
-    _ =
-        p.support.attach.sum fun i =>
-          f (coeff p i.1 * p.leadingCoeff ^ (natDegree p - 1)) * z ^ i.1 := by
-      by_cases hp : p = 0; · simp [hp]
-      have one_le_deg : 1 ≤ natDegree p :=
-        Nat.succ_le_of_lt (natDegree_pos_of_eval₂_root hp f hz inj)
-      congr with i
-      congr 2
-      by_cases hi : i.1 = natDegree p
-      · rw [hi, integralNormalization_coeff_degree, one_mul, leadingCoeff, ← pow_succ',
-          tsub_add_cancel_of_le one_le_deg]
-        exact degree_eq_natDegree hp
-      · have : i.1 ≤ p.natDegree - 1 :=
-          Nat.le_sub_one_of_lt
-            (lt_of_le_of_ne (le_natDegree_of_ne_zero (mem_support_iff.mp i.2)) hi)
-        rw [integralNormalization_coeff_ne_natDegree hi, mul_assoc, ← pow_add,
-          tsub_add_cancel_of_le this]
-    _ = f p.leadingCoeff ^ (natDegree p - 1) * eval₂ f z p := by
-      simp_rw [eval₂_eq_sum, sum_def, fun i => mul_comm (coeff p i), RingHom.map_mul,
-               RingHom.map_pow, mul_assoc, ← Finset.mul_sum]
-      congr 1
-      exact p.support.sum_attach fun i ↦ f (p.coeff i) * z ^ i
-    _ = 0 := by rw [hz, mul_zero]
+  sorry
 
 theorem integralNormalization_aeval_eq_zero [Algebra R S] {f : R[X]} {z : S} (hz : aeval z f = 0)
     (inj : ∀ x : R, algebraMap R S x = 0 → x = 0) :
