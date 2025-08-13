@@ -8,6 +8,7 @@ import Mathlib.Data.Option.Defs
 import Mathlib.Logic.IsEmpty
 import Mathlib.Logic.Relator
 import Mathlib.Util.CompileInductive
+import Mathlib.Logic.Function.Iterate
 import Aesop
 
 /-!
@@ -269,5 +270,17 @@ lemma elim'_update {α : Type*} {β : Type*} [DecidableEq α]
   Function.rec_update (α := fun _ => β) (@Option.some.inj _) (Option.elim' f) (fun _ _ => rfl) (fun
     | _, _, .some _, h => (h _ rfl).elim
     | _, _, .none, _ => rfl) _ _ _
+
+lemma bind_iterate (f : α → Option α) (a : Option α) (n : ℕ) :
+    (Option.bind · f)^[n+1] a = Option.bind ((Option.bind · f)^[n] a) f := by
+  induction n with
+  | zero => simp
+  | succ n ih => rw [Function.iterate_succ', Function.comp_apply, ih]
+
+lemma bind_iterate' (f : α → Option α) (a : Option α) (n : ℕ) :
+    (Option.bind · f)^[n+1] a = (Option.bind · f)^[n] (a.bind f) := by
+  induction n generalizing a with
+  | zero => simp
+  | succ n ih => rw [Function.iterate_succ, Function.comp_apply, ih]
 
 end Option
