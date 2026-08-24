@@ -131,6 +131,7 @@ theorem comp_list_congr_with_eqToHom {n : ℕ}
     have h4 : h_objs (Fin.last (n + 1)) = hZ := by rfl
     rw [h1, h2, h3, h4]
     exact h_main
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Helper: extend a comp_list by one more morphism at the end.
     Construct objs' and homs' explicitly by appending one more object and morphism.
     Then use comp_list_succ to show the equality. -/
@@ -341,6 +342,7 @@ theorem comp_list_snoc {n : ℕ}
   rw [h2, h1]
   exact h_main
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem comp_list_concat_explicit {n m : ℕ}
     (objs₁ : Fin (n + 1) → C)
     (homs₁ : ∀ i : Fin n, objs₁ (Fin.castSucc i) ⟶ objs₁ (Fin.succ i))

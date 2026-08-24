@@ -194,6 +194,7 @@ lemma functor_eq_map_eq {C D : Type u} [Category C] [Category D]
   <;> simp [eqToHom_refl, Category.comp_id, Category.id_comp]
   <;> rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Independence of the simple version with respect to inclusion of opens.
     If W ≤ U, the map through W (transported to U's obj_at type) equals the map through U. -/
 theorem single_covered_map_simple_indep_of_le {x y : X}
@@ -316,17 +317,10 @@ theorem single_covered_map_simple_indep_of_le {x y : X}
       <;> rfl
     rw [h2]
 
-    -- All equality proofs between the same objects are equal
-    have h_irrel : ∀ {A B : s.pt} (h1 h2 : A = B), eqToHom h1 = eqToHom h2 := by
-      intro A B h1 h2
-      congr <;> exact Subsingleton.elim _ _
-
     -- Now simplify using associativity and proof irrelevance
-    simp [Category.assoc, eqToHom_trans]
-    <;>
-    (try { congr <;> exact Subsingleton.elim _ _ })
-    <;>
-    aesop
+    simp only [Functor.comp_obj, Monotone.functor_obj, Functor.const_obj_obj, Category.assoc,
+      eqToHom_trans, eqToHom_trans_assoc]
+    congr
 
   exact h_main_goal
 

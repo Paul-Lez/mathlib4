@@ -122,6 +122,7 @@ lemma agree_on_segment
   rw [h3, h4] at h2
   exact h2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Uniqueness of the descent functor on morphisms: any two functors F G : π₁(X) → s.pt
     that make the cocone triangles commute must agree on all morphisms
     (modulo eqToHom transport for object equalities). -/

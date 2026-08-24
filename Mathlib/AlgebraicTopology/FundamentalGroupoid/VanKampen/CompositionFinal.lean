@@ -133,6 +133,7 @@ lemma exists_canonical_decomposition' {x y : X} {γ : Path x y} {S : Finset I}
     my_map_from_adapted_subdivision_universal X 𝒰 hcover hfinite_intersections s hS ts h_ts_strict h_ts_image covers hcover_mem h_range
   exact ⟨n, ts, h_ts_strict, h_ts_image, covers, hcover_mem, h_range, h_eq⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Main composition lemma -/
 theorem my_map_from_adapted_subdivision_comp_cauchy {x y z : X}
     (γ₁ : Path x y) (γ₂ : Path y z)
@@ -1125,7 +1126,6 @@ theorem my_map_from_adapted_subdivision_comp_cauchy {x y z : X}
             (congr_arg (desc_functor_obj X 𝒰 hcover s ∘ FundamentalGroupoid.mk) h_pts0₂).symm) := by
         rw [eqToHom_trans]
       rw [h_comp]
-      exact h_eqToHom_congr _ _
     simp [g, Category.assoc, h1, h2, h3, h4, h_middle]
     <;> rfl
   rw [h_lhs_eq, h_rhs_eq]

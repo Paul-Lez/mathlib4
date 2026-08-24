@@ -96,6 +96,7 @@ lemma my_fac_property_obj (U : Opens X) (hU : U ∈ 𝒰)
     rfl
   rw [h_main, h3]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Local copy of single_covered_map_fac for use in this file. -/
 lemma single_covered_map_fac_local
     {x y : X} (γ : Path x y) (U : Opens X) (hU : U ∈ 𝒰) (h_range : Set.range γ ⊆ (U : Set X)) :
@@ -125,6 +126,7 @@ lemma single_covered_map_fac_local
   <;> simp
   <;> rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Fac property for my_desc_functor on morphisms:
     Given a path γ in U, my_desc_functor.map applied to the image of γ's homotopy class
     equals the cocone leg map applied to the lifted homotopy class,
