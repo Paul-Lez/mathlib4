@@ -37,6 +37,7 @@ open FundamentalGroupoid
 
 variable (X)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The canonical cocone on a subtype family 𝒰 with apex V. -/
 def mkSubtypeCocone (V : Opens X) (𝒰 : Set (Opens X))
     (h_le : ∀ U ∈ 𝒰, U ≤ V) :
@@ -126,6 +127,7 @@ lemma opensLeCover_closedUnderFiniteIntersections
   have h : s.inf (fun V => V) ≤ V := Finset.inf_le hV_in
   exact le_trans h hi
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Relative Van Kampen theorem (subtype form).
     Proof: apply absolute Van Kampen to the subspace V and transport back. -/
 theorem relative_vanKampen_subtype (V : Opens X) (𝒰 : Set (Opens X))
